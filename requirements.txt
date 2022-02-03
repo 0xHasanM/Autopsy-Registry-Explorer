@@ -1,2 +1,2 @@
-csv
-magic
+python-csv
+python-magic-bin
