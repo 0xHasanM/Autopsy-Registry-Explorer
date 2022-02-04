@@ -1,2 +1,4 @@
 python-csv
+cython
+python-magic
 python-magic-bin

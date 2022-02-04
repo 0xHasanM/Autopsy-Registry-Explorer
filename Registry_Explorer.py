@@ -4,7 +4,6 @@ import shutil
 import ntpath
 import subprocess
 import csv
-import magic
 from com.williballenthin.rejistry import RegistryHiveFile
 from com.williballenthin.rejistry import RegistryKey
 from com.williballenthin.rejistry import RegistryParseException
@@ -86,42 +85,41 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
             for file in files:
                 if self.context.isJobCancelled():
                     return IngestModule.ProcessResult.OK
-                if ((file.getName() == 'SOFTWARE') and ('registry' in magic.from_file(file)) and (file.getSize() > 0)):
+                if ((file.getName() == 'SOFTWARE') and (file.getSize() > 0)):
                     try:
                         self.writeHiveFile(file, file.getName(), tempDir)
                         softwarehive = os.path.join(tempDir, fileName)
                         software = file
                     except:
-                        softwarehive = "none"
-                elif ((file.getName() == 'NTUSER.DAT') and ('registry' in magic.from_file(file))) and (file.getSize() > 0)):
+                        pass
+                elif ((file.getName() == 'NTUSER.DAT') and (file.getSize() > 0)):
                     try:                    
                         self.writeHiveFile(file, fileName, tempDir)
                         ntuserhive = os.path.join(tempDir, fileName)
                         ntuser = file
                     except:
-                        ntuserhive = "none"
-                elif ((file.getName() == 'UsrClass.dat') and ('registry' in magic.from_file(file))) and (file.getSize() > 0)):
+                        pass
+                elif ((file.getName() == 'UsrClass.dat') and (file.getSize() > 0)):
                     try:                    
                         self.writeHiveFile(file, fileName, tempDir)
                         usrclasshive = os.path.join(tempDir, fileName)
                         usrclass = file
                     except:
-                        usrclasshive = "none"
-                elif ((file.getName() == 'SAM') and ('registry' in magic.from_file(file))) and (file.getSize() > 0)):
+                        pass
+                elif ((file.getName() == 'SAM') and (file.getSize() > 0)):
                     try:
                         self.writeHiveFile(file, file.getName(), tempDir)
                         samhive = os.path.join(tempDir, fileName)
                         sam = file
                     except:
-                        samhive = "none"
-                elif ((file.getName() == 'SYSTEM') and ('registry' in magic.from_file(file))) and (file.getSize() > 0)):
+                        pass
+                elif ((file.getName() == 'SYSTEM') and (file.getSize() > 0)):
                     try:
                         self.writeHiveFile(file, file.getName(), tempDir)
                         systemhive = os.path.join(tempDir, fileName)
                         system = file
                     except:
-                        systemhive = "none"
-        self.log(Level.INFO, "Running program on data source " + self.path_to_exe + " parm 1 ==> " + ntuserhive + "  Parm 2 ==> " + softwarehive + " Parm 3 ==> " + tempDir)
+                        pass
         subprocess.Popen([self.path_to_exe, ntuserhive, softwarehive, usrclasshive, samhive, systemhive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1]
         self.log(Level.INFO, "Begin Create New Artifacts")
         attributeIdRunKeyName = blackboard.getOrAddAttributeType("TSK_REG_KEY_NAME", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Name")
@@ -189,7 +187,8 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
                         self.log(Level.INFO, str(e))
                         continue
         try:
-            shutil.rmtree(tempDir)		
+            shutil.rmtree(tempDir)
+            shutil.rmtree(tempDir + ".csv")            
         except Exception as e:
             self.log(Level.INFO, "removal of directory tree failed " + tempDir)
         message = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
