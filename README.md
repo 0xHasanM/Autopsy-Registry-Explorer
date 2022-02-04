@@ -10,8 +10,10 @@ Autopsy Module to analyze Registry Hives based on bookmarks provided by <a href=
 
 ## Installation  
 1. ```git clone https://github.com/0xMohammed/Autopsy-Registry-Explorer.git```  
-2. ```copy Module folder to ''```  
+2. ```copy Module folder to 'C:\Users\{Username}\AppData\Roaming\autopsy\python_modules'```  
 3. ```pip2.7 install -r requirements.txt```
+## Screenshot
+![Alt Text](https://github.com/0xMohammed/Autopsy-Registry-Explorer/blob/main/screenshot.png)  
 
 ## TO-DO
 1. Add Transaction logs analysis
