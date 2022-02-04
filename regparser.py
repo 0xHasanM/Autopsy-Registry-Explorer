@@ -11,15 +11,30 @@ def regparser(ntuserhive, softwarehive, usrclasshive, samhive, systemhive, tempD
         with open(bookmark_dir + file, 'r') as bookmark:
             bookmark_json = loads(bookmark.read())
         if bookmark_json["HiveType"].lower() == "ntuser":
-            reg = Registry.Registry(ntuserhive)
+            if ntuserhive == "na":
+                continue
+            else:
+                reg = Registry.Registry(ntuserhive)
         elif bookmark_json["HiveType"].lower() == "software":
-            reg = Registry.Registry(softwarehive)
+            if softwarehive == "na":
+                continue
+            else:
+                reg = Registry.Registry(softwarehive)
         elif bookmark_json["HiveType"].lower() == "usrclass":
-            reg = Registry.Registry(usrclasshive)
+            if usrclasshive == "na":
+                continue
+            else:
+                reg = Registry.Registry(usrclasshive)
         elif bookmark_json["HiveType"].lower() == "sam":
-            reg = Registry.Registry(samhive)
+            if samhive == "na":
+                continue
+            else:
+                reg = Registry.Registry(samhive)
         elif bookmark_json["HiveType"].lower() == "system":
-            reg = Registry.Registry(systemhive)
+            if systemhive == "na":
+                continue
+            else:
+                reg = Registry.Registry(systemhive)
         else:
             continue
         try:

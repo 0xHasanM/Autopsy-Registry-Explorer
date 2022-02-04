@@ -79,6 +79,7 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
         skCase = Case.getCurrentCase().getSleuthkitCase()
         blackboard = Case.getCurrentCase().getSleuthkitCase().getBlackboard()
         fileManager = Case.getCurrentCase().getServices().getFileManager()
+        softwarehive = ntuserhive = usrclasshive = samhive = systemhive = "na"
         for fileName in filesToExtract:
             files = fileManager.findFiles(dataSource, fileName)
             numFiles = len(files)
