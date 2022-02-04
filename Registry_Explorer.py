@@ -40,7 +40,7 @@ from org.sleuthkit.autopsy.modules.interestingitems import FilesSetsManager
 class RegistryExampleIngestModuleFactory(IngestModuleFactoryAdapter):
     def __init__(self):
         self.settings = None
-    moduleName = "RegistyExplorer Module"
+    moduleName = "RegistyExplorer"
     def getModuleDisplayName(self):
         return self.moduleName
     def getModuleDescription(self):
