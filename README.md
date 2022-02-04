@@ -10,8 +10,8 @@ Autopsy Module to analyze Registry Hives based on bookmarks provided by <a href=
 
 ## Features
 1. Analyse Registry hives based on bookmarks provided by <a href="https://github.com/EricZimmerman/RegistryExplorerBookmarks">EricZimmerman</a>
-2. Ability to analysed regstry hives indepndently without the need to load a full disk image
-3. Categorize Keys according to it's usage
+2. Ability to analyze registry hives independently without the need to load a full disk image
+3. Categorize Keys according to their usage
 
 ## Screenshot
 ![Alt Text](https://github.com/0xMohammed/Autopsy-Registry-Explorer/blob/main/screenshot.png)  
