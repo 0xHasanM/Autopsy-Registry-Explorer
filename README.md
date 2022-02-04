@@ -8,12 +8,17 @@ Autopsy Module to analyze Registry Hives based on bookmarks provided by <a href=
 * OS's supported on: Windows
 * License: GNU General Public License Version 3
 
-## Installation  
-1. ```git clone https://github.com/0xMohammed/Autopsy-Registry-Explorer.git```  
-2. ```copy Module folder to 'C:\Users\{Username}\AppData\Roaming\autopsy\python_modules'```
+## Features
+1. Analyse Registry hives based on bookmarks provided by <a href="https://github.com/EricZimmerman/RegistryExplorerBookmarks">EricZimmerman</a>
+2. Ability to analysed regstry hives indepndently without the need to load a full disk image
+3. Categorize Keys according to it's usage
 
 ## Screenshot
 ![Alt Text](https://github.com/0xMohammed/Autopsy-Registry-Explorer/blob/main/screenshot.png)  
+
+## Installation  
+1. ```git clone https://github.com/0xMohammed/Autopsy-Registry-Explorer.git```  
+2. ```copy Module folder to 'C:\Users\{Username}\AppData\Roaming\autopsy\python_modules'```
 
 ## TO-DO
 1. Add Transaction logs analysis
