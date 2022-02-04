@@ -193,7 +193,7 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
         except Exception as e:
             self.log(Level.INFO, "removal of directory tree failed " + tempDir)
         message = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
-            "RegistryExample", " RegistryExample Files Have Been Analyzed " )
+            "RegistryExplorer", " RegistryExplorer Files Have Been Analyzed " )
         IngestServices.getInstance().postMessage(message)
         return IngestModule.ProcessResult.OK                
     def writeHiveFile(self, file, fileName, tempDir):
