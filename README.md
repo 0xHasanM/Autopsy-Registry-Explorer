@@ -22,6 +22,7 @@ Autopsy Module to analyze Registry Hives based on bookmarks provided by <a href=
 
 ## TO-DO
 1. Add Transaction logs analysis
+2. Recover Deleted Keys and Values
 
 ## Refrences  
 [Autopsy discussion group](https://sleuthkit.discourse.group/t/creating-new-custom-artifact/2367)  
