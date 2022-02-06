@@ -4,10 +4,6 @@ import shutil
 import ntpath
 import subprocess
 import csv
-from com.williballenthin.rejistry import RegistryHiveFile
-from com.williballenthin.rejistry import RegistryKey
-from com.williballenthin.rejistry import RegistryParseException
-from com.williballenthin.rejistry import RegistryValue
 from java.io import File
 from java.lang import Class
 from java.lang import System
@@ -37,7 +33,7 @@ from org.sleuthkit.autopsy.casemodule.services import Services
 from org.sleuthkit.autopsy.casemodule.services import FileManager
 from org.sleuthkit.autopsy.datamodel import ContentUtils
 from org.sleuthkit.autopsy.modules.interestingitems import FilesSetsManager
-class RegistryExampleIngestModuleFactory(IngestModuleFactoryAdapter):
+class RegistryExplorerIngestModuleFactory(IngestModuleFactoryAdapter):
     def __init__(self):
         self.settings = None
     moduleName = "RegistyExplorer Module"
@@ -52,9 +48,9 @@ class RegistryExampleIngestModuleFactory(IngestModuleFactoryAdapter):
     def isDataSourceIngestModuleFactory(self):
         return True
     def createDataSourceIngestModule(self, ingestOptions):
-        return RegistryExampleIngestModule(self.settings)
-class RegistryExampleIngestModule(DataSourceIngestModule):
-    _logger = Logger.getLogger(RegistryExampleIngestModuleFactory.moduleName)
+        return RegistryExplorerIngestModule(self.settings)
+class RegistryExplorerIngestModule(DataSourceIngestModule):
+    _logger = Logger.getLogger(RegistryExplorerIngestModuleFactory.moduleName)
     def log(self, level, msg):
         self._logger.logp(level, self.__class__.__name__, inspect.stack()[1][3], msg)
     def __init__(self, settings):
@@ -90,7 +86,6 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
                 if ((file.getName() == 'SOFTWARE') and (file.getSize() > 0)):
                     try:
                         ContentUtils.writeToFile(file, File(os.path.join(tempDir, file.getName())))
-                        self.log(Level.INFO, "Begin Create"+os.path.join(tempDir, file.getName()))
                         software = file
                     except:
                         pass
@@ -98,7 +93,6 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
                     try:
                         fileName = str(file.getId()) + "-" + file.getName()
                         ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
-                        self.log(Level.INFO, "Begin Create"+os.path.join(tempDir, fileName))
                         ntuser = file
                     except:
                         pass
@@ -106,28 +100,24 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
                     try:
                         fileName = str(file.getId()) + "-" + file.getName()
                         ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
-                        self.log(Level.INFO, "Begin Create"+os.path.join(tempDir, fileName))
                         usrclass = file
                     except:
                         pass
                 elif ((file.getName() == 'SAM') and (file.getSize() > 0)):
                     try:
                         ContentUtils.writeToFile(file, File(os.path.join(tempDir, file.getName())))
-                        self.log(Level.INFO, "Begin Create"+os.path.join(tempDir, file.getName()))
                         sam = file
                     except:
                         pass
                 elif ((file.getName() == 'SYSTEM') and (file.getSize() > 0)):
                     try:
                         ContentUtils.writeToFile(file, File(os.path.join(tempDir, file.getName())))
-                        self.log(Level.INFO, "Begin Create"+os.path.join(tempDir, file.getName()))
                         system = file
                     except:
                         pass
         for file in os.listdir(tempDir):
             software_hive = ntuser_hive = usrclass_hive = sam_hive = system_hive = "na"
             if 'software' in str(file).lower():
-                self.log(Level.INFO, "Begin Create"+os.path.join(tempDir, file))
                 software_hive = os.path.join(tempDir, file)
                 subprocess.Popen([self.regparser_exe, ntuser_hive, software_hive, usrclass_hive, sam_hive, system_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1]
             elif 'ntuser' in str(file).lower():
@@ -149,7 +139,7 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
         attributeIdRegKeyCategory = blackboard.getOrAddAttributeType("TSK_REG_KEY_CATEGORY", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Category")
         attributeIdRegKeyPath = blackboard.getOrAddAttributeType("TSK_REG_KEY_PATH", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "PATH")		
         attributeIdRegHiveType = blackboard.getOrAddAttributeType("TSK_REG_HIVE_TYPE", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "HiveType")
-        moduleName = RegistryExampleIngestModuleFactory.moduleName
+        moduleName = RegistryExplorerIngestModuleFactory.moduleName
         data = []
         with open(tempDir+'.csv') as csv_file:
             keys = csv.reader(csv_file)
@@ -212,6 +202,6 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
         except Exception as e:
             self.log(Level.INFO, "removal of directory tree failed " + tempDir)
         message = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
-            "RegistryExample", " RegistryExample Files Have Been Analyzed " )
+            "RegistryExplorer", " RegistryExplorer Files Have Been Analyzed " )
         IngestServices.getInstance().postMessage(message)
         return IngestModule.ProcessResult.OK
