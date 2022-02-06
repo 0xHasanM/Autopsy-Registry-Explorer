@@ -21,7 +21,7 @@ Autopsy Module to analyze Registry Hives based on bookmarks provided by <a href=
 2. ```copy Module folder to 'C:\Users\{Username}\AppData\Roaming\autopsy\python_modules'```
 
 ## TO-DO
-1. Add Transaction logs analysis
+1. Add Transaction logs analysis and determine wether the Registry Hive is dirty or not.
 2. Recover Deleted Keys and Values
 
 ## Refrences  
