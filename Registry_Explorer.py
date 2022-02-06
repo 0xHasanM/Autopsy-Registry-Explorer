@@ -264,7 +264,10 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
                 break
         if dirty_hives == True:
             message = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
-                "RegistryExplorer", "Some Dirty Hives Found." )
+                "RegistryExplorer", " Some Dirty Hives Found. " )
+            IngestServices.getInstance().postMessage(message)
+            message = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
+                "RegistryExplorer", " Transaction logs have been replayed. " )
             IngestServices.getInstance().postMessage(message)
         for file in os.listdir(tempDir+'\\..\\'):
             software_hive = ntuser_hive = usrclass_hive = sam_hive = system_hive = "na"
