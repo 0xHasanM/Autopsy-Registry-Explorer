@@ -40,7 +40,7 @@ from org.sleuthkit.autopsy.modules.interestingitems import FilesSetsManager
 class RegistryExampleIngestModuleFactory(IngestModuleFactoryAdapter):
     def __init__(self):
         self.settings = None
-    moduleName = "RegistyExplorer"
+    moduleName = "RegistyExplorer Module"
     def getModuleDisplayName(self):
         return self.moduleName
     def getModuleDescription(self):
@@ -62,8 +62,9 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
     def startUp(self, context):
         self.context = context
         if PlatformUtil.isWindowsOS():
-            self.path_to_exe = os.path.join(os.path.dirname(os.path.abspath(__file__)), "regparser.exe")
-            if not os.path.exists(self.path_to_exe):
+            self.regparser_exe = os.path.join(os.path.dirname(os.path.abspath(__file__)), "regparser.exe")
+            self.rla_exe = os.path.join(os.path.dirname(os.path.abspath(__file__)), "rla.exe")
+            if not os.path.exists(self.regparser_exe) or not os.path.exists(self.rla_exe):
                 raise IngestModuleException("EXE was not found in module folder")
         else:
             raise IngestModuleException("This module is for Windows OS only")
@@ -88,40 +89,59 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
                     return IngestModule.ProcessResult.OK
                 if ((file.getName() == 'SOFTWARE') and (file.getSize() > 0)):
                     try:
-                        self.writeHiveFile(file, file.getName(), tempDir)
-                        softwarehive = os.path.join(tempDir, fileName)
+                        ContentUtils.writeToFile(file, File(os.path.join(tempDir, file.getName())))
+                        self.log(Level.INFO, "Begin Create"+os.path.join(tempDir, file.getName()))
                         software = file
                     except:
                         pass
                 elif ((file.getName() == 'NTUSER.DAT') and (file.getSize() > 0)):
-                    try:                    
-                        self.writeHiveFile(file, fileName, tempDir)
-                        ntuserhive = os.path.join(tempDir, fileName)
+                    try:
+                        fileName = str(file.getId()) + "-" + file.getName()
+                        ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
+                        self.log(Level.INFO, "Begin Create"+os.path.join(tempDir, fileName))
                         ntuser = file
                     except:
                         pass
                 elif ((file.getName() == 'UsrClass.dat') and (file.getSize() > 0)):
-                    try:                    
-                        self.writeHiveFile(file, fileName, tempDir)
-                        usrclasshive = os.path.join(tempDir, fileName)
+                    try:
+                        fileName = str(file.getId()) + "-" + file.getName()
+                        ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
+                        self.log(Level.INFO, "Begin Create"+os.path.join(tempDir, fileName))
                         usrclass = file
                     except:
                         pass
                 elif ((file.getName() == 'SAM') and (file.getSize() > 0)):
                     try:
-                        self.writeHiveFile(file, file.getName(), tempDir)
-                        samhive = os.path.join(tempDir, fileName)
+                        ContentUtils.writeToFile(file, File(os.path.join(tempDir, file.getName())))
+                        self.log(Level.INFO, "Begin Create"+os.path.join(tempDir, file.getName()))
                         sam = file
                     except:
                         pass
                 elif ((file.getName() == 'SYSTEM') and (file.getSize() > 0)):
                     try:
-                        self.writeHiveFile(file, file.getName(), tempDir)
-                        systemhive = os.path.join(tempDir, fileName)
+                        ContentUtils.writeToFile(file, File(os.path.join(tempDir, file.getName())))
+                        self.log(Level.INFO, "Begin Create"+os.path.join(tempDir, file.getName()))
                         system = file
                     except:
                         pass
-        subprocess.Popen([self.path_to_exe, ntuserhive, softwarehive, usrclasshive, samhive, systemhive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1]
+        for file in os.listdir(tempDir):
+            software_hive = ntuser_hive = usrclass_hive = sam_hive = system_hive = "na"
+            if 'software' in str(file).lower():
+                self.log(Level.INFO, "Begin Create"+os.path.join(tempDir, file))
+                software_hive = os.path.join(tempDir, file)
+                subprocess.Popen([self.regparser_exe, ntuser_hive, software_hive, usrclass_hive, sam_hive, system_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1]
+            elif 'ntuser' in str(file).lower():
+                ntuser_hive = os.path.join(tempDir, file)
+                subprocess.Popen([self.regparser_exe, ntuser_hive, software_hive, usrclass_hive, sam_hive, system_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1]
+            elif 'usrclass' in str(file).lower():
+                usrclass_hive = os.path.join(tempDir, file)
+                subprocess.Popen([self.regparser_exe, ntuser_hive, software_hive, usrclass_hive, sam_hive, system_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1]
+            elif 'sam' in str(file).lower():
+                sam_hive = os.path.join(tempDir, file)
+                subprocess.Popen([self.regparser_exe, ntuser_hive, software_hive, usrclass_hive, sam_hive, system_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1]
+            elif 'system' in str(file).lower():
+                system_hive = os.path.join(tempDir, file)
+                subprocess.Popen([self.regparser_exe, ntuser_hive, software_hive, usrclass_hive, sam_hive, system_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1]
         self.log(Level.INFO, "Begin Create New Artifacts")
         attributeIdRunKeyName = blackboard.getOrAddAttributeType("TSK_REG_KEY_NAME", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Name")
         attributeIdRunKeyValue = blackboard.getOrAddAttributeType("TSK_REG_KEY_VALUE", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Value")
@@ -188,14 +208,10 @@ class RegistryExampleIngestModule(DataSourceIngestModule):
                         self.log(Level.INFO, str(e))
                         continue
         try:
-            shutil.rmtree(tempDir)
-            shutil.rmtree(tempDir + ".csv")            
+            shutil.rmtree(tempDir + '\\..\\')
         except Exception as e:
             self.log(Level.INFO, "removal of directory tree failed " + tempDir)
         message = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
-            "RegistryExplorer", " RegistryExplorer Files Have Been Analyzed " )
+            "RegistryExample", " RegistryExample Files Have Been Analyzed " )
         IngestServices.getInstance().postMessage(message)
-        return IngestModule.ProcessResult.OK                
-    def writeHiveFile(self, file, fileName, tempDir):
-        filePath = os.path.join(tempDir, fileName)
-        ContentUtils.writeToFile(file, File(filePath))
+        return IngestModule.ProcessResult.OK

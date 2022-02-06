@@ -4,7 +4,7 @@ from json import loads
 from csv import writer,reader
 from Registry import Registry
 def regparser(ntuserhive, softwarehive, usrclasshive, samhive, systemhive, tempDir, modulepath):
-    csv = open(tempDir + ".csv", "w", newline='')
+    csv = open(tempDir + ".csv", "a", newline='')
     csv_write = writer(csv)
     bookmark_dir = modulepath + ".\\common\\"
     for file in listdir(bookmark_dir):
