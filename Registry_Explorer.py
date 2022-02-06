@@ -248,16 +248,21 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
                                                 except Exception as e:
                                                     continue
         self.log(Level.INFO,subprocess.Popen([self.rla_exe, '--d', tempDir, '--out', tempDir+'\\..\\'], stdout=subprocess.PIPE).communicate()[0])
-        if 'LOG' in os.listdir(tempDir) \
-        or 'LOG1' in os.listdir(tempDir) \
-        or 'LOG2' in os.listdir(tempDir) \
-        or 'DLL' in os.listdir(tempDir) \
-        or 'EXE' in os.listdir(tempDir) \
-        or 'CSV' in os.listdir(tempDir) \
-        or 'BLF' in os.listdir(tempDir) \
-        or 'REGTRANS-MS' in os.listdir(tempDir) \
-        or 'TXT' in os.listdir(tempDir) \
-        or 'INI' in os.listdir(tempDir):
+        dirty_hives = False
+        for file in os.listdir(tempDir):
+            if 'LOG' in str(file).upper() \
+            or 'LOG1' in str(file).upper() \
+            or 'LOG2' in str(file).upper() \
+            or 'DLL' in str(file).upper() \
+            or 'EXE' in str(file).upper() \
+            or 'CSV' in str(file).upper() \
+            or 'BLF' in str(file).upper() \
+            or 'REGTRANS-MS' in str(file).upper() \
+            or 'TXT' in str(file).upper() \
+            or 'INI' in str(file).upper():
+                dirty_hives = True
+                break
+        if dirty_hives == True:
             message = IngestMessage.createMessage(IngestMessage.MessageType.DATA,
                 "RegistryExplorer", "Some Dirty Hives Found." )
             IngestServices.getInstance().postMessage(message)
@@ -294,7 +299,7 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
                 if ','.join(registryKey) in data:
                     continue
                 else:
-                    data += ','.join(registryKey)
+                    data.append(','.join(registryKey))
                     try:
                         if "firewall" in registryKey[2]:
                             artType = blackboard.getOrAddArtifactType( "TSK_REGISTRY_KEYS_FIREWALL", "Windows Registry Keys (Firewall)")
