@@ -42,7 +42,7 @@ class RegistryExplorerIngestModuleFactory(IngestModuleFactoryAdapter):
     def getModuleDescription(self):
         return "Extract Keys To Look For Interesting Items"
     def getModuleVersionNumber(self):
-        return "0.1 Beta"
+        return "0.2 Beta"
     def hasIngestJobSettingsPanel(self):
         return False
     def isDataSourceIngestModuleFactory(self):
