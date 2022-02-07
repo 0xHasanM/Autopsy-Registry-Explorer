@@ -163,7 +163,7 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
                                                         ContentUtils.writeToFile(file, File(os.path.join(tempDir, str(extracted_files.split('-')[0])+'-'+file.getName())))
                                                 except Exception as e:
                                                     continue
-        if softwarehive == "na" and  ntuserhive == "na" and  usrclasshive == "na" and  samhive == "na" and  systemhive == "na":
+        if os.listdir(tempDir) == []:
             for fileName in filesToExtract:
                 files = fileManager.findFiles(dataSource, fileName)
                 for file in files:
