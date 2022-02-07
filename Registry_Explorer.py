@@ -66,7 +66,8 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
             raise IngestModuleException("This module is for Windows OS only")
     def process(self, dataSource, progressBar):
         progressBar.switchToIndeterminate()
-        filesToExtract = ("%NTUSER%", "%SOFTWARE%", "%UsrClass%", "%SAM%", "%SYSTEM%")
+        filesToExtract = ("NTUSER.DAT", "SOFTWARE", "UsrClass.dat", "SAM", "SYSTEM")
+        logToExtract = ("%NTUSER%", "%SOFTWARE%", "%UsrClass%", "%SAM%", "%SYSTEM%")
         dir_search = ('/WINDOWS/SYSTEM32/CONFIG/','/Users/', '/Windows/ServiceProfiles')
         tempDir = os.path.join(Case.getCurrentCase().getTempDirectory(), "RegistryExplorer")
         self.log(Level.INFO, "create Directory " + tempDir)
@@ -86,51 +87,40 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
                     if self.context.isJobCancelled():
                         return IngestModule.ProcessResult.OK
                     if ((file.getName() == 'SOFTWARE') and (file.getSize() > 0)):
-                        try:
                             fileName = str(file.getId()) + "-" + file.getName()
                             registry_hives.append(fileName)
                             ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
                             globals()[fileName]=file
-                            globals()[file.getId()+'-softprnt'] = file.getParentPath()
-                        except Exception as e:
-                            pass
+                            globals()[str(file.getId())+'-softprnt'] = file.getParentPath()
                     elif ((file.getName() == 'NTUSER.DAT') and (file.getSize() > 0)):
-                        try:
                             fileName = str(file.getId()) + "-" + file.getName()
                             registry_hives.append(fileName)
                             ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
                             globals()[fileName]=file
-                            globals()[file.getId()+'-ntusrprnt'] = file.getParentPath()
-                        except Exception as e:
-                            pass
+                            globals()[str(file.getId())+'-ntusrprnt'] = file.getParentPath()
                     elif ((file.getName() == 'UsrClass.dat') and (file.getSize() > 0)):
-                        try:
                             fileName = str(file.getId()) + "-" + file.getName()
                             registry_hives.append(fileName)
                             ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
                             globals()[fileName]=file
-                            globals()[file.getId()+'-usrclsprnt'] = file.getParentPath()
-                        except Exception as e:
-                            pass
+                            globals()[str(file.getId())+'-usrclsprnt'] = file.getParentPath()
                     elif ((file.getName() == 'SAM') and (file.getSize() > 0)):
-                        try:
                             fileName = str(file.getId()) + "-" + file.getName()
                             registry_hives.append(fileName)
                             ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
                             globals()[fileName]=file
-                            globals()[file.getId()+'-samprnt'] = file.getParentPath()
-                        except Exception as e:
-                            pass
+                            globals()[str(file.getId())+'-samprnt'] = file.getParentPath()
                     elif ((file.getName() == 'SYSTEM') and (file.getSize() > 0)):
-                        try:
                             fileName = str(file.getId()) + "-" + file.getName()
                             registry_hives.append(fileName)
                             ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
                             globals()[fileName]=file
-                            globals()[file.getId()+'-systemprnt'] = file.getParentPath()
-                        except Exception as e:
-                            pass
-                    elif file.getNameExtension().upper() == 'LOG' \
+                            globals()[str(file.getId())+'-systemprnt'] = file.getParentPath()
+        for logName in logToExtract:
+            for dirName in dir_search:
+                files = fileManager.findFiles(dataSource, logName, dirName)
+                for file in files:
+                    if file.getNameExtension().upper() == 'LOG' \
                     or file.getNameExtension().upper() == 'LOG1' \
                     or file.getNameExtension().upper() == 'LOG2' \
                     or file.getNameExtension().upper() == 'DLL' \
@@ -145,23 +135,23 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
                                 try:
                                     if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-usrclsprnt'] and 'usrclass' in file.getName().lower():
                                         ContentUtils.writeToFile(file, File(os.path.join(tempDir, str(extracted_files.split('-')[0])+'-'+file.getName())))
-                                except Exception as e:
+                                except KeyError:
                                     try:
                                         if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-systemprnt'] and 'system' in file.getName().lower():
                                             ContentUtils.writeToFile(file, File(os.path.join(tempDir, str(extracted_files.split('-')[0])+'-'+file.getName())))
-                                    except Exception as e:
+                                    except KeyError:
                                         try:
                                             if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-samprnt'] and 'sam' in file.getName().lower():
                                                 ContentUtils.writeToFile(file, File(os.path.join(tempDir, str(extracted_files.split('-')[0])+'-'+file.getName())))
-                                        except Exception as e:
+                                        except KeyError:
                                             try:
                                                 if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-ntusrprnt'] and 'ntuser' in file.getName().lower():
                                                     ContentUtils.writeToFile(file, File(os.path.join(tempDir, str(extracted_files.split('-')[0])+'-'+file.getName())))
-                                            except Exception as e:
+                                            except KeyError:
                                                 try:
                                                     if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-softprnt'] and 'software' in file.getName().lower():
                                                         ContentUtils.writeToFile(file, File(os.path.join(tempDir, str(extracted_files.split('-')[0])+'-'+file.getName())))
-                                                except Exception as e:
+                                                except KeyError:
                                                     continue
         if os.listdir(tempDir) == []:
             for fileName in filesToExtract:
@@ -170,83 +160,71 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
                     if self.context.isJobCancelled():
                         return IngestModule.ProcessResult.OK
                     if ((file.getName() == 'SOFTWARE') and (file.getSize() > 0)):
-                        try:
                             fileName = str(file.getId()) + "-" + file.getName()
                             registry_hives.append(fileName)
                             ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
                             globals()[fileName]=file
-                            globals()[file.getId()+'-softprnt'] = file.getParentPath()
-                        except Exception as e:                            
-                            pass
+                            globals()[str(file.getId())+'-softprnt'] = file.getParentPath()
                     elif ((file.getName() == 'NTUSER.DAT') and (file.getSize() > 0)):
-                        try:
                             fileName = str(file.getId()) + "-" + file.getName()
                             registry_hives.append(fileName)
                             ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
                             globals()[fileName]=file
                             globals()[str(file.getId())+'-ntusrprnt'] = file.getParentPath()
-                        except Exception as e:                            
-                            pass
                     elif ((file.getName() == 'UsrClass.dat') and (file.getSize() > 0)):
-                        try:
                             fileName = str(file.getId()) + "-" + file.getName()
                             registry_hives.append(fileName)
                             ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
                             globals()[fileName]=file
                             globals()[str(file.getId())+'-usrclsprnt'] = file.getParentPath()
-                        except Exception as e:                            
-                            pass
                     elif ((file.getName() == 'SAM') and (file.getSize() > 0)):
-                        try:
                             fileName = str(file.getId()) + "-" + file.getName()
                             registry_hives.append(fileName)
                             ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
                             globals()[fileName]=file
                             globals()[str(file.getId())+'-samprnt'] = file.getParentPath()
-                        except Exception as e:                            
-                            pass
                     elif ((file.getName() == 'SYSTEM') and (file.getSize() > 0)):
-                        try:
                             fileName = str(file.getId()) + "-" + file.getName()
                             registry_hives.append(fileName)
                             ContentUtils.writeToFile(file, File(os.path.join(tempDir, fileName)))
                             globals()[fileName]=file
                             globals()[str(file.getId())+'-systemprnt'] = file.getParentPath()
-                        except Exception as e:                            
-                            pass
-                    elif file.getNameExtension().upper() == 'LOG' \
-                    or file.getNameExtension().upper() == 'LOG1' \
-                    or file.getNameExtension().upper() == 'LOG2' \
-                    or file.getNameExtension().upper() == 'DLL' \
-                    or file.getNameExtension().upper() == 'EXE' \
-                    or file.getNameExtension().upper() == 'CSV' \
-                    or file.getNameExtension().upper() == 'BLF' \
-                    or file.getNameExtension().upper() == 'REGTRANS-MS' \
-                    or file.getNameExtension().upper() == 'TXT' \
-                    or file.getNameExtension().upper() == 'INI':
-                        if file.getSize > 0:
-                            for extracted_files in registry_hives:
-                                try:                                    
-                                    if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-usrclsprnt'] and 'usrclass' in file.getName().lower():
-                                        ContentUtils.writeToFile(file, File(os.path.join(tempDir, str(extracted_files.split('-')[0])+'-'+file.getName())))
-                                except Exception as e:
-                                    try:                                        
-                                        if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-systemprnt'] and 'system' in file.getName().lower():
+            for logName in logToExtract:
+                    files = fileManager.findFiles(dataSource, logName)
+                    for file in files:
+                        if file.getNameExtension().upper() == 'LOG' \
+                        or file.getNameExtension().upper() == 'LOG1' \
+                        or file.getNameExtension().upper() == 'LOG2' \
+                        or file.getNameExtension().upper() == 'DLL' \
+                        or file.getNameExtension().upper() == 'EXE' \
+                        or file.getNameExtension().upper() == 'CSV' \
+                        or file.getNameExtension().upper() == 'BLF' \
+                        or file.getNameExtension().upper() == 'REGTRANS-MS' \
+                        or file.getNameExtension().upper() == 'TXT' \
+                        or file.getNameExtension().upper() == 'INI':
+                            if file.getSize > 0:
+                                for extracted_files in registry_hives:
+                                    try:
+                                        if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-usrclsprnt'] and 'usrclass' in file.getName().lower():
                                             ContentUtils.writeToFile(file, File(os.path.join(tempDir, str(extracted_files.split('-')[0])+'-'+file.getName())))
-                                    except Exception as e:
-                                        try:                                            
-                                            if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-samprnt'] and 'sam' in file.getName().lower():
+                                    except KeyError:
+                                        try:
+                                            if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-systemprnt'] and 'system' in file.getName().lower():
                                                 ContentUtils.writeToFile(file, File(os.path.join(tempDir, str(extracted_files.split('-')[0])+'-'+file.getName())))
-                                        except Exception as e:
-                                            try:                                                
-                                                if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-ntusrprnt'] and 'ntuser' in file.getName().lower():
+                                        except KeyError:
+                                            try:
+                                                if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-samprnt'] and 'sam' in file.getName().lower():
                                                     ContentUtils.writeToFile(file, File(os.path.join(tempDir, str(extracted_files.split('-')[0])+'-'+file.getName())))
-                                            except Exception as e:
+                                            except KeyError:
                                                 try:
-                                                    if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-softprnt'] and 'software' in file.getName().lower():
+                                                    if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-ntusrprnt'] and 'ntuser' in file.getName().lower():
                                                         ContentUtils.writeToFile(file, File(os.path.join(tempDir, str(extracted_files.split('-')[0])+'-'+file.getName())))
-                                                except Exception as e:
-                                                    continue
+                                                except KeyError:
+                                                    try:
+                                                        if file.getParentPath() == globals()[str(extracted_files.split('-')[0])+'-softprnt'] and 'software' in file.getName().lower():
+                                                            ContentUtils.writeToFile(file, File(os.path.join(tempDir, str(extracted_files.split('-')[0])+'-'+file.getName())))
+                                                    except KeyError:
+                                                        continue
         self.log(Level.INFO,subprocess.Popen([self.rla_exe, '--d', tempDir, '--out', tempDir+'\\..\\'], stdout=subprocess.PIPE).communicate()[0])
         dirty_hives = False
         for file in os.listdir(tempDir):
@@ -303,9 +281,21 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
                     continue
                 else:
                     data.append(','.join(registryKey))
-                    try:
-                        if "firewall" in registryKey[2]:
-                            artType = blackboard.getOrAddArtifactType( "TSK_REGISTRY_KEYS_FIREWALL", "Windows Registry Keys (Firewall)")
+                    if "firewall" in registryKey[2]:
+                        artType = blackboard.getOrAddArtifactType( "TSK_REGISTRY_KEYS_FIREWALL", "Windows Registry Keys (Firewall)")
+                        registry = globals()[registryKey[6]]
+                        art = registry.newArtifact(artType.getTypeID())
+                        art.addAttributes(((BlackboardAttribute(attributeIdRunKeyName, moduleName, registryKey[0])), \
+                                           (BlackboardAttribute(attributeIdRunKeyValue, moduleName, registryKey[1])), \
+                                           (BlackboardAttribute(attributeIdRegKeyDesc, moduleName, registryKey[2])), \
+                                           (BlackboardAttribute(attributeIdRegKeyCategory, moduleName, registryKey[3])), \
+                                           (BlackboardAttribute(attributeIdRegKeyPath, moduleName, registryKey[4])), \
+                                           (BlackboardAttribute(attributeIdRegHiveType, moduleName, registryKey[5])), \
+                                           (BlackboardAttribute(attributeIdRegHivePath, moduleName, registryKey[6]))))
+                        blackboard.postArtifact(art, moduleName)
+                    elif "services" in registryKey[4].lower():
+                        if registryKey[0] == "ImagePath":
+                            artType = blackboard.getOrAddArtifactType( "TSK_REGISTRY_KEYS_SERVICES", "Windows Registry Keys (Services)")
                             registry = globals()[registryKey[6]]
                             art = registry.newArtifact(artType.getTypeID())
                             art.addAttributes(((BlackboardAttribute(attributeIdRunKeyName, moduleName, registryKey[0])), \
@@ -316,36 +306,20 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
                                                (BlackboardAttribute(attributeIdRegHiveType, moduleName, registryKey[5])), \
                                                (BlackboardAttribute(attributeIdRegHivePath, moduleName, registryKey[6]))))
                             blackboard.postArtifact(art, moduleName)
-                        elif "services" in registryKey[4].lower():
-                            if registryKey[0] == "ImagePath":
-                                artType = blackboard.getOrAddArtifactType( "TSK_REGISTRY_KEYS_SERVICES", "Windows Registry Keys (Services)")
-                                registry = globals()[registryKey[6]]
-                                art = registry.newArtifact(artType.getTypeID())
-                                art.addAttributes(((BlackboardAttribute(attributeIdRunKeyName, moduleName, registryKey[0])), \
-                                                   (BlackboardAttribute(attributeIdRunKeyValue, moduleName, registryKey[1])), \
-                                                   (BlackboardAttribute(attributeIdRegKeyDesc, moduleName, registryKey[2])), \
-                                                   (BlackboardAttribute(attributeIdRegKeyCategory, moduleName, registryKey[3])), \
-                                                   (BlackboardAttribute(attributeIdRegKeyPath, moduleName, registryKey[4])), \
-                                                   (BlackboardAttribute(attributeIdRegHiveType, moduleName, registryKey[5])), \
-                                                   (BlackboardAttribute(attributeIdRegHivePath, moduleName, registryKey[6]))))
-                                blackboard.postArtifact(art, moduleName)
-                            else:
-                                continue
                         else:
-                            artType = blackboard.getOrAddArtifactType( "TSK_REGISTRY_KEYS_"+registryKey[3], "Windows Registry Keys ("+registryKey[3]+")")
-                            registry = globals()[registryKey[6]]
-                            art = registry.newArtifact(artType.getTypeID())
-                            art.addAttributes(((BlackboardAttribute(attributeIdRunKeyName, moduleName, registryKey[0])), \
-                                               (BlackboardAttribute(attributeIdRunKeyValue, moduleName, registryKey[1])), \
-                                               (BlackboardAttribute(attributeIdRegKeyDesc, moduleName, registryKey[2])), \
-                                               (BlackboardAttribute(attributeIdRegKeyCategory, moduleName, registryKey[3])), \
-                                               (BlackboardAttribute(attributeIdRegKeyPath, moduleName, registryKey[4])), \
-                                               (BlackboardAttribute(attributeIdRegHiveType, moduleName, registryKey[5])), \
-                                               (BlackboardAttribute(attributeIdRegHivePath, moduleName, registryKey[6]))))
-                            blackboard.postArtifact(art, moduleName)
-                    except Exception as e:
-                        self.log(Level.INFO, "Artifact Parsing: "+str(e))
-                        continue
+                            continue
+                    else:
+                        artType = blackboard.getOrAddArtifactType( "TSK_REGISTRY_KEYS_"+registryKey[3], "Windows Registry Keys ("+registryKey[3]+")")
+                        registry = globals()[registryKey[6]]
+                        art = registry.newArtifact(artType.getTypeID())
+                        art.addAttributes(((BlackboardAttribute(attributeIdRunKeyName, moduleName, registryKey[0])), \
+                                           (BlackboardAttribute(attributeIdRunKeyValue, moduleName, registryKey[1])), \
+                                           (BlackboardAttribute(attributeIdRegKeyDesc, moduleName, registryKey[2])), \
+                                           (BlackboardAttribute(attributeIdRegKeyCategory, moduleName, registryKey[3])), \
+                                           (BlackboardAttribute(attributeIdRegKeyPath, moduleName, registryKey[4])), \
+                                           (BlackboardAttribute(attributeIdRegHiveType, moduleName, registryKey[5])), \
+                                           (BlackboardAttribute(attributeIdRegHivePath, moduleName, registryKey[6]))))
+                        blackboard.postArtifact(art, moduleName)
         try:
             shutil.rmtree(tempDir+'\\..\\')		
         except Exception as e:
