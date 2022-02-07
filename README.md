@@ -4,7 +4,7 @@ Autopsy Module to analyze Registry Hives based on bookmarks provided by <a href=
 
 ## Specification
 
-* Tested Autopsy version: 4.19.3
+* Tested Autopsy version: 4.18.0+
 * OS's supported on: Windows
 * License: GNU General Public License Version 3
 
