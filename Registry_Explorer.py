@@ -42,7 +42,7 @@ class RegistryExplorerIngestModuleFactory(IngestModuleFactoryAdapter):
     def getModuleDescription(self):
         return "Extract Keys To Look For Interesting Items"
     def getModuleVersionNumber(self):
-        return "0.2 Beta"
+        return "0.1 Beta"
     def hasIngestJobSettingsPanel(self):
         return False
     def isDataSourceIngestModuleFactory(self):
@@ -66,8 +66,8 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
             raise IngestModuleException("This module is for Windows OS only")
     def process(self, dataSource, progressBar):
         progressBar.switchToIndeterminate()
-        filesToExtract = ("NTUSER.DAT", "SOFTWARE", "UsrClass.dat", "SAM", "SYSTEM")
-        logToExtract = ("%NTUSER%", "%SOFTWARE%", "%UsrClass%", "%SAM%", "%SYSTEM%")
+        filesToExtract = ("NTUSER.DAT", "SOFTWARE", "UsrClass.dat", "SAM", "SYSTEM", "SECURITY")
+        logToExtract = ("%NTUSER%", "%SOFTWARE%", "%UsrClass%", "%SAM%", "%SYSTEM%", "%SECURITY%")
         dir_search = ('/WINDOWS/SYSTEM32/CONFIG/','/Users/', '/Windows/ServiceProfiles')
         tempDir = os.path.join(Case.getCurrentCase().getTempDirectory(), "RegistryExplorer")
         self.log(Level.INFO, "create Directory " + tempDir)
@@ -248,30 +248,28 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
                 "RegistryExplorer", " Transaction logs have been replayed. " )
             IngestServices.getInstance().postMessage(message)
         for file in os.listdir(tempDir+'\\..\\'):
-            software_hive = ntuser_hive = usrclass_hive = sam_hive = system_hive = "na"
             os.rename(tempDir+'\\..\\'+file, tempDir+'\\..\\'+file.split('_')[-1])
             if 'software' in str(file).lower():
-                software_hive = os.path.join(tempDir+'\\..\\', file.split('_')[-1])
-                self.log(Level.INFO,subprocess.Popen([self.regparser_exe, ntuser_hive, software_hive, usrclass_hive, sam_hive, system_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1])
+                registry_hive = os.path.join(tempDir+'\\..\\', file.split('_')[-1])
+                self.log(Level.INFO,subprocess.Popen([self.regparser_exe, registry_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1])
             elif 'ntuser' in str(file).lower():
-                ntuser_hive = os.path.join(tempDir+'\\..\\', file.split('_')[-1])
-                self.log(Level.INFO,subprocess.Popen([self.regparser_exe, ntuser_hive, software_hive, usrclass_hive, sam_hive, system_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1])
+                registry_hive = os.path.join(tempDir+'\\..\\', file.split('_')[-1])
+                self.log(Level.INFO,subprocess.Popen([self.regparser_exe, registry_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1])
             elif 'usrclass' in str(file).lower():
-                usrclass_hive = os.path.join(tempDir+'\\..\\', file.split('_')[-1])
-                self.log(Level.INFO,subprocess.Popen([self.regparser_exe, ntuser_hive, software_hive, usrclass_hive, sam_hive, system_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1])
+                registry_hive = os.path.join(tempDir+'\\..\\', file.split('_')[-1])
+                self.log(Level.INFO,subprocess.Popen([self.regparser_exe, registry_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1])
             elif 'sam' in str(file).lower():
-                sam_hive = os.path.join(tempDir+'\\..\\', file.split('_')[-1])
-                self.log(Level.INFO,subprocess.Popen([self.regparser_exe, ntuser_hive, software_hive, usrclass_hive, sam_hive, system_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1])
+                registry_hive = os.path.join(tempDir+'\\..\\', file.split('_')[-1])
+                self.log(Level.INFO,subprocess.Popen([self.regparser_exe, registry_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1])
             elif 'system' in str(file).lower():
-                system_hive = os.path.join(tempDir+'\\..\\', file.split('_')[-1])
-                self.log(Level.INFO,subprocess.Popen([self.regparser_exe, ntuser_hive, software_hive, usrclass_hive, sam_hive, system_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1])
+                registry_hive = os.path.join(tempDir+'\\..\\', file.split('_')[-1])
+                self.log(Level.INFO,subprocess.Popen([self.regparser_exe, registry_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1])
         attributeIdRunKeyName = blackboard.getOrAddAttributeType("TSK_REG_KEY_NAME", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Name")
         attributeIdRunKeyValue = blackboard.getOrAddAttributeType("TSK_REG_KEY_VALUE", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Value")
         attributeIdRegKeyDesc = blackboard.getOrAddAttributeType("TSK_REG_KEY_DESC", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Description")
         attributeIdRegKeyCategory = blackboard.getOrAddAttributeType("TSK_REG_KEY_CATEGORY", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "Category")
         attributeIdRegKeyPath = blackboard.getOrAddAttributeType("TSK_REG_KEY_PATH", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "PATH")		
         attributeIdRegHiveType = blackboard.getOrAddAttributeType("TSK_REG_HIVE_TYPE", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "HiveType")
-        attributeIdRegHivePath = blackboard.getOrAddAttributeType("TSK_REG_HIVE_PATH", BlackboardAttribute.TSK_BLACKBOARD_ATTRIBUTE_VALUE_TYPE.STRING, "HivePath")
         moduleName = RegistryExplorerIngestModuleFactory.moduleName
         data = []
         with open(tempDir+'.csv') as csv_file:
@@ -281,45 +279,16 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
                     continue
                 else:
                     data.append(','.join(registryKey))
-                    if "firewall" in registryKey[2]:
-                        artType = blackboard.getOrAddArtifactType( "TSK_REGISTRY_KEYS_FIREWALL", "Windows Registry Keys (Firewall)")
-                        registry = globals()[registryKey[6]]
-                        art = registry.newArtifact(artType.getTypeID())
-                        art.addAttributes(((BlackboardAttribute(attributeIdRunKeyName, moduleName, registryKey[0])), \
-                                           (BlackboardAttribute(attributeIdRunKeyValue, moduleName, registryKey[1])), \
-                                           (BlackboardAttribute(attributeIdRegKeyDesc, moduleName, registryKey[2])), \
-                                           (BlackboardAttribute(attributeIdRegKeyCategory, moduleName, registryKey[3])), \
-                                           (BlackboardAttribute(attributeIdRegKeyPath, moduleName, registryKey[4])), \
-                                           (BlackboardAttribute(attributeIdRegHiveType, moduleName, registryKey[5])), \
-                                           (BlackboardAttribute(attributeIdRegHivePath, moduleName, registryKey[6]))))
-                        blackboard.postArtifact(art, moduleName)
-                    elif "services" in registryKey[4].lower():
-                        if registryKey[0] == "ImagePath":
-                            artType = blackboard.getOrAddArtifactType( "TSK_REGISTRY_KEYS_SERVICES", "Windows Registry Keys (Services)")
-                            registry = globals()[registryKey[6]]
-                            art = registry.newArtifact(artType.getTypeID())
-                            art.addAttributes(((BlackboardAttribute(attributeIdRunKeyName, moduleName, registryKey[0])), \
-                                               (BlackboardAttribute(attributeIdRunKeyValue, moduleName, registryKey[1])), \
-                                               (BlackboardAttribute(attributeIdRegKeyDesc, moduleName, registryKey[2])), \
-                                               (BlackboardAttribute(attributeIdRegKeyCategory, moduleName, registryKey[3])), \
-                                               (BlackboardAttribute(attributeIdRegKeyPath, moduleName, registryKey[4])), \
-                                               (BlackboardAttribute(attributeIdRegHiveType, moduleName, registryKey[5])), \
-                                               (BlackboardAttribute(attributeIdRegHivePath, moduleName, registryKey[6]))))
-                            blackboard.postArtifact(art, moduleName)
-                        else:
-                            continue
-                    else:
-                        artType = blackboard.getOrAddArtifactType( "TSK_REGISTRY_KEYS_"+registryKey[3], "Windows Registry Keys ("+registryKey[3]+")")
-                        registry = globals()[registryKey[6]]
-                        art = registry.newArtifact(artType.getTypeID())
-                        art.addAttributes(((BlackboardAttribute(attributeIdRunKeyName, moduleName, registryKey[0])), \
-                                           (BlackboardAttribute(attributeIdRunKeyValue, moduleName, registryKey[1])), \
-                                           (BlackboardAttribute(attributeIdRegKeyDesc, moduleName, registryKey[2])), \
-                                           (BlackboardAttribute(attributeIdRegKeyCategory, moduleName, registryKey[3])), \
-                                           (BlackboardAttribute(attributeIdRegKeyPath, moduleName, registryKey[4])), \
-                                           (BlackboardAttribute(attributeIdRegHiveType, moduleName, registryKey[5])), \
-                                           (BlackboardAttribute(attributeIdRegHivePath, moduleName, registryKey[6]))))
-                        blackboard.postArtifact(art, moduleName)
+                    artType = blackboard.getOrAddArtifactType( "TSK_REGISTRY_KEYS_"+registryKey[3], "Windows Registry Keys ("+registryKey[3]+")")
+                    registry = globals()[registryKey[5]]
+                    art = registry.newArtifact(artType.getTypeID())
+                    art.addAttributes(((BlackboardAttribute(attributeIdRunKeyName, moduleName, registryKey[0])), \
+                                       (BlackboardAttribute(attributeIdRunKeyValue, moduleName, registryKey[1])), \
+                                       (BlackboardAttribute(attributeIdRegKeyDesc, moduleName, registryKey[2])), \
+                                       (BlackboardAttribute(attributeIdRegKeyCategory, moduleName, registryKey[3])), \
+                                       (BlackboardAttribute(attributeIdRegKeyPath, moduleName, registryKey[4])), \
+                                       (BlackboardAttribute(attributeIdRegHiveType, moduleName, registryKey[5]))))
+                    blackboard.postArtifact(art, moduleName)
         try:
             shutil.rmtree(tempDir+'\\..\\')		
         except Exception as e:
