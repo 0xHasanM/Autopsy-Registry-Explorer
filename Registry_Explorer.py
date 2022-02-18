@@ -248,7 +248,10 @@ class RegistryExplorerIngestModule(DataSourceIngestModule):
                 "RegistryExplorer", " Transaction logs have been replayed. " )
             IngestServices.getInstance().postMessage(message)
         for file in os.listdir(tempDir+'\\..\\'):
-            os.rename(tempDir+'\\..\\'+file, tempDir+'\\..\\'+file.split('_')[-1])
+            try:
+                os.rename(tempDir+'\\..\\'+file, tempDir+'\\..\\'+file.split('_')[-1])
+            except OSError:
+                continue
             if 'software' in str(file).lower():
                 registry_hive = os.path.join(tempDir+'\\..\\', file.split('_')[-1])
                 self.log(Level.INFO,subprocess.Popen([self.regparser_exe, registry_hive, tempDir, os.path.dirname(os.path.abspath(__file__))], stderr=subprocess.PIPE).communicate()[1])
